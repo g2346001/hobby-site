@@ -6,6 +6,14 @@ const DATA_TYPES = {
   おすすめ度: "number",
 };
 
+const DISPLAIES_FOR_SP = {
+  タイトル: "primary",
+  著者: "none",
+  Wikipediaの紹介: "none",
+  ジャンル: "secondary",
+  おすすめ度: "secondary",
+};
+
 const numeralColumns = {};
 const categoricalColumns = {};
 
@@ -102,74 +110,21 @@ function createTableContents(records) {
     const th = document.createElement("th");
     th.textContent = key;
     th.dataset.type = DATA_TYPES[key]; // データ型情報を dataset に与える
+    th.dataset.spDisplay = DISPLAIES_FOR_SP[key]; // スマホの表示情報を dataset に与える
     th.addEventListener("click", function () {
       setSort(th, records);
     });
     headerRow.append(th);
   }
   thead.append(headerRow);
-  table.append(thead);
+  // table.append(thead);
 
   // データ行を生成
   const tbody = document.createElement("tbody");
   createTableBodyRows(tbody, records);
-  for (let record of records) {
-    const tr = document.createElement("tr");
-    // keyword（検索キーワード）が指定されている場合、レコードがキーワードを含むかチェック
-    if (keyword) {
-      let isMatch = false; // キーワードが一致するかどうかを判定するフラグ
-      for (const key in record) {
-        // レコードの各フィールドにキーワードが含まれているかチェック
-        if (record[key].includes(keyword)) {
-          isMatch = true; // 一致する場合、フラグをtrueに設定
-          break; // 一致が確認できた時点でループを抜ける
-        }
-      }
-      // キーワードが一致しない場合、このレコードは表示しない（次のレコードへ）
-      if (!isMatch) {
-        continue;
-      }
-    }
-    for (let key in record) {
-      const td = document.createElement("td");
-      const text = record[key];
+  // table.append(tbody);
 
-      // keywordが指定されている場合、キーワードを強調表示する
-      if (keyword) {
-        const regexp = new RegExp(keyword, "g"); // キーワードにマッチする正規表現を作成
-        // キーワードを強調する
-        const replacedText = text.replace(regexp, (match) => {
-          return `<mark>${match}</mark>`;
-        });
-        td.innerHTML = replacedText; // 置換後のHTMLをセルに挿入
-      } else {
-        td.textContent = text; // 各データセルに値を設定
-      }
-      // 数値型の場合、最大値と最小値を元に色付け
-      if (DATA_TYPES[key] === "number") {
-        const column = numeralColumns[key];
-        const ratio = (Number(text) - column.min) / (column.max - column.min);
-        td.style.backgroundColor = `rgba(255, 196, 196, ${ratio})`; // 背景色を設定
-      }
-
-            // 範疇型の場合、カテゴリごとに色付け
-      if (DATA_TYPES[key] === "category") {
-        const column = categoricalColumns[key];
-        const index = column.indexOf(text);
-        const hue = (360 / column.length) * index;
-        td.style.backgroundColor = `hsl(${hue}, 80%, 90%)`; // 背景色を設定
-      }
-
-      tr.append(td);
-    }
-    tr.addEventListener("click", function (event) {
-      showDetail(record);
-    });
-    tbody.append(tr);
-  }
-  table.append(tbody);
-
-  return table;
+  return [thead, tbody];
 }
 
 function showDetail(record) {
